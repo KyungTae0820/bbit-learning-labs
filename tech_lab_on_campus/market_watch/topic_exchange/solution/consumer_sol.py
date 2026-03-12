@@ -34,15 +34,16 @@ class mqConsumer(mqConsumerInterface):
         con_params = pika.URLParameters(os.environ["AMQP_URL"])
         self.m_connection = pika.BlockingConnection(parameters=con_params)
         self.m_channel = self.m_connection.channel()
-        self.m_channel.queue_declare(queue=self.m_queue_name)
         self.m_channel.exchange_declare(
             exchange=self.m_exchange_name, exchange_type="topic"
         )
+        self.m_channel.queue_declare(queue=self.m_queue_name)
         self.m_channel.queue_bind(
             queue=self.m_queue_name,
             routing_key=self.m_binding_key,
             exchange=self.m_exchange_name,
         )
+        self.m_channel.basic_qos(prefetch_count=1)
         self.m_channel.basic_consume(
             queue=self.m_queue_name,
             on_message_callback=self.on_message_callback,
@@ -55,10 +56,12 @@ class mqConsumer(mqConsumerInterface):
         channel.basic_ack(delivery_tag=method_frame.delivery_tag)
         if isinstance(body, bytes):
             body = body.decode("utf-8")
-        print(f" [x] Received Message: {body}")
+        print(f" [x] Received Message: {body}", flush=True)
+        sys.stdout.flush()
 
     def startConsuming(self) -> None:
-        print(" [*] Waiting for messages. To exit press CTRL+C")
+        print(" [*] Waiting for messages. To exit press CTRL+C", flush=True)
+        sys.stdout.flush()
         self.m_channel.start_consuming()
 
     def __del__(self) -> None:
