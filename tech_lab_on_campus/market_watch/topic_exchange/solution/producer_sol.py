@@ -31,7 +31,9 @@ class mqProducer(mqProducerInterface):
         con_params = pika.URLParameters(os.environ["AMQP_URL"])
         self.m_connection = pika.BlockingConnection(parameters=con_params)
         self.m_channel = self.m_connection.channel()
-        self.m_channel.exchange_declare(exchange=self.m_exchange_name)
+        self.m_channel.exchange_declare(
+            exchange=self.m_exchange_name, exchange_type="topic"
+        )
 
     def publishOrder(self, message: str) -> None:
         self.m_channel.basic_publish(
@@ -39,7 +41,6 @@ class mqProducer(mqProducerInterface):
             routing_key=self.m_routing_key,
             body=message,
         )
-
         print(" [x] Sent Orders")
         self.m_channel.close()
         self.m_connection.close()

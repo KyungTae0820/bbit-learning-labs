@@ -35,7 +35,9 @@ class mqConsumer(mqConsumerInterface):
         self.m_connection = pika.BlockingConnection(parameters=con_params)
         self.m_channel = self.m_connection.channel()
         self.m_channel.queue_declare(queue=self.m_queue_name)
-        self.m_channel.exchange_declare(exchange=self.m_exchange_name)
+        self.m_channel.exchange_declare(
+            exchange=self.m_exchange_name, exchange_type="topic"
+        )
         self.m_channel.queue_bind(
             queue=self.m_queue_name,
             routing_key=self.m_binding_key,
